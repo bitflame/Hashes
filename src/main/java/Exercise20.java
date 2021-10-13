@@ -84,8 +84,8 @@ public class Exercise20 {
             int numberOfComparesBeforeFindingKey = 1;
             int i;
             for (i = hash(key); keys[i] != null; i = (i + 1) % size) {
+                numberOfComparesBeforeFindingKey++;
                 if (keys[i].equals(key)) {
-                    numberOfComparesBeforeFindingKey++;
                     vals[i] = val;
                     return;
                 }
@@ -164,6 +164,12 @@ public class Exercise20 {
         LinearProbingHashST<TestKey, Integer> l = e.new LinearProbingHashST<>(20);
         l.put(e.new TestKey(5), 5);
         StdOut.println(l.getAverageCostOfSearchHit() + " Expected: 1");
+        l.put(e.new TestKey(8), 8);
+        l.put(e.new TestKey(2), 2);
+        StdOut.println(l.getAverageCostOfSearchHit() + " Expected: 1");
+        l.put(e.new TestKey(1), 1);
+        l.put(e.new TestKey(9), 9);
+        StdOut.println(l.getAverageCostOfSearchHit() + " Expected: 2");
     }
 }
 
