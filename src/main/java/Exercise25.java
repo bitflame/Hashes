@@ -1,4 +1,8 @@
+import edu.princeton.cs.algs4.In;
+import edu.princeton.cs.algs4.Queue;
 import edu.princeton.cs.algs4.StdOut;
+
+import java.util.Arrays;
 
 public class Exercise25 {
     public class LinearProbing<Key, Value> {
@@ -84,7 +88,7 @@ public class Exercise25 {
             values[i] = null;
             keys[i] = null;
             i = (i + 1) % size;
-            while (keys[i]!=null) {
+            while (keys[i] != null) {
                 Key keyToRedo = keys[i];
                 Value valueToRedo = values[i];
                 keys[i] = null;
@@ -94,10 +98,27 @@ public class Exercise25 {
                 i = (i + 1) % size;
             }
             keysSize--;
-            if (keysSize>1 && keysSize< (double) size/8){
-                resize(size/2);
+            if (keysSize > 1 && keysSize < (double) size / 8) {
+                resize(size / 2);
                 lgM--;
             }
+        }
+
+        public Iterable<Key> keys() {
+            Queue<Key> keySet = new Queue<>();
+            int i = 0;
+            for (Key key : keys) {
+                if (key != null) {
+                    keySet.enqueue(key);
+                }
+            }
+            Key[] keysToBeSorted = (Key[]) new Object[keySet.size()];
+            for (i = 0; i < keySet.size(); i++) {
+                keysToBeSorted[i] = keySet.dequeue();
+            }
+            Arrays.sort(keysToBeSorted);
+            for (Key key : keysToBeSorted) keySet.enqueue(key);
+            return keySet;
         }
     }
 
@@ -106,12 +127,17 @@ public class Exercise25 {
         LinearProbing<Integer, Integer> l = e.new LinearProbing<>(10);
 
         for (int i = 0; i < 20; i++) {
-            l.put(i, i / 2);
+            l.put(i, i);
         }
 
         for (int i = 0; i < 10; i++) {
             l.delete(i);
         }
-        StdOut.println("Just put in 20 items, removed 10, and have :"+l.size());
+
+        StdOut.println("Just put in 20 items, removed 10, and have :" + l.size());
+
+        for (int i = 0; i < 20; i++) {
+            StdOut.println(l.get(i));
+        }
     }
 }
