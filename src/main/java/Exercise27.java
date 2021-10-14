@@ -1,8 +1,11 @@
+import edu.princeton.cs.algs4.In;
 import edu.princeton.cs.algs4.Queue;
 import edu.princeton.cs.algs4.StdOut;
 
+import java.util.Arrays;
+
 public class Exercise27 {
-    private class SeparateChainingHashTableDoubleProbing<Key, Value> {
+    public class SeparateChainingHashTableDoubleProbing<Key, Value> {
         private class SequentialSearchSymbolTable<Key, Value> {
             private class Node {
                 Key key;
@@ -187,7 +190,7 @@ public class Exercise27 {
                 }
             } else {
                 boolean isInList1 = false;
-                for (Object keyInList1 : symbolTable[hash1.keys()]) {
+                for (Object keyInList1 : symbolTable[hash1].keys()) {
                     if (keyInList1.equals(key)) {
                         isInList1 = true;
                         break;
@@ -240,5 +243,37 @@ public class Exercise27 {
                 resize(size / 2);
             }
         }
+
+        public Iterable<Key> keys() {
+            Queue<Key> keys = new Queue<>();
+            for (SequentialSearchSymbolTable<Key, Value> sequentialSearchST : symbolTable) {
+                for (Key k : sequentialSearchST.keys()) {
+                    keys.enqueue(k);
+                }
+            }
+            if (!keys.isEmpty() & keys.peek() instanceof Comparable) {
+                Key[] keysToBeSorted = (Key[]) new Comparable[keys.size()];
+                for (int i = 0; i < keysToBeSorted.length; i++) {
+                    keysToBeSorted[i] = keys.dequeue();
+                }
+                Arrays.sort(keysToBeSorted);
+                for (Key key : keysToBeSorted) keys.enqueue(key);
+            }
+            return keys;
+        }
+    }
+
+    public static void main(String[] args) {
+        Exercise27 e = new Exercise27();
+        SeparateChainingHashTableDoubleProbing<Integer, Integer> separateChainingHashTableDoubleProbing
+                = e.new SeparateChainingHashTableDoubleProbing<Integer, Integer>();
+        for (int i = 0; i < 100; i++) {
+            separateChainingHashTableDoubleProbing.put(i, i);
+        }
+        separateChainingHashTableDoubleProbing.get(3);
+        separateChainingHashTableDoubleProbing.get(7);
+        separateChainingHashTableDoubleProbing.delete(3);
+        separateChainingHashTableDoubleProbing.delete(5);
+        separateChainingHashTableDoubleProbing.put(10, 10);
     }
 }
