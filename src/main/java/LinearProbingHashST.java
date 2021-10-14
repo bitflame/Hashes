@@ -4,10 +4,10 @@ import edu.princeton.cs.algs4.StdOut;
 import java.util.Arrays;
 
 public class LinearProbingHashST<Key, Value> {
-    private int keysSize;
-    private int size = 16;
-    private Key[] keys;
-    private Value[] vals;
+    protected int keysSize;
+    protected int size = 16;
+    protected Key[] keys;
+    protected Value[] vals;
     private int numberOfCompares;
     int[] primes = {31, 61, 127, 251, 509, 1021, 2039, 4093, 8191, 16381, 32749, 65521, 131071, 262139, 524287,
             1048573, 2097143, 41943011, 8388593, 16777216, 33554393, 67108859, 134217689, 268435399, 536870909,
@@ -21,7 +21,7 @@ public class LinearProbingHashST<Key, Value> {
         lgM = (int) (Math.log(size) / Math.log(2));
     }
 
-    private int size() {
+    protected int size() {
         return keysSize;
     }
 
@@ -29,7 +29,7 @@ public class LinearProbingHashST<Key, Value> {
         return keysSize == 0;
     }
 
-    private int hash(Key key) {
+    protected int hash(Key key) {
         int hash = (key.hashCode() & 0x7fffffff);
         if (lgM < 26) hash = hash % primes[lgM + 5];
         return hash % size;

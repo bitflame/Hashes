@@ -45,15 +45,17 @@ public class Exercise25 {
         }
 
         public void resize(int newSize) {
-            Key[] newKeysArray = (Key[]) new Object[newSize];
-            Value[] newValuesArray = (Value[]) new Object[newSize];
-            for (int i = 0; i < keys.length; i++) {
-                newKeysArray[i] = keys[i];
-                newValuesArray[i] = values[i];
+            LinearProbing<Key, Value> ll = new LinearProbing<>(newSize);
+            for (int i = 0; i < size; i++) {
+                if (values[i]!=null) {
+                    ll.put(keys[i],values[i]);
+                }
             }
-            keys = newKeysArray;
-            values = newValuesArray;
+            keys = ll.keys;
+            values = ll.values;
             size = newSize;
+
+
         }
 
         public Value get(Key key) {
@@ -130,7 +132,7 @@ public class Exercise25 {
             l.put(i, i);
         }
 
-        for (int i = 0; i < 10; i++) {
+        for (int i = 0; i < 16; i++) {
             l.delete(i);
         }
 
