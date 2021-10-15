@@ -1,12 +1,10 @@
 import edu.princeton.cs.algs4.Queue;
-import edu.princeton.cs.algs4.StdOut;
 
 import java.awt.geom.QuadCurve2D;
 import java.util.Arrays;
 
-@SuppressWarnings("unchecked")
-public class SeparateChainingHashTable<Key, Value> {
-    public class SequentialSearchSymboleTable<Key, Value> {
+public class DoubleProbingHashTable<Key, Value> {
+    class SequentialSearchSymbolTable<Key, Value> {
         private class Node {
             Key key;
             Value value;
@@ -60,6 +58,7 @@ public class SeparateChainingHashTable<Key, Value> {
                 size--;
                 return;
             }
+
             for (Node node = first; node != null; node = node.next) {
                 if (node.next != null && node.next.key.equals(key)) {
                     node.next = node.next.next;
@@ -79,28 +78,23 @@ public class SeparateChainingHashTable<Key, Value> {
     }
 
     protected int averageListSize;
-    public int size;
-    public int keysSize;
-    public SequentialSearchSymboleTable<Key, Value>[] symboleTable;
+
+    protected int size;
+    protected int keysSize;
+    SequentialSearchSymbolTable[] symbolTable;
+
     private static final int DEFAULT_HASH_TABLE_SIZE = 997;
     private static final int DEFAULT_AVERAGE_LIST_SIZE = 5;
-    protected static final int[] primes = {1,1,3,7,13,31, 61, 127, 251, 509, 1021, 2039, 4093, 8191, 16381, 32749, 65521, 131071, 262139, 524287,
-            1048573, 2097143, 4194301, 8388593, 16777213, 33554393, 67108859, 134217689, 268435399, 536870909,
-            1073741789, 2147483647};
-    protected int lgM;
 
-    public SeparateChainingHashTable() {
-        this(DEFAULT_HASH_TABLE_SIZE, DEFAULT_AVERAGE_LIST_SIZE);
-    }
-
-    public SeparateChainingHashTable(int initialSize, int averageListSize) {
+    public DoubleProbingHashTable(int initialSize, int averageListSize) {
         this.size = initialSize;
         this.averageListSize = averageListSize;
-        symboleTable = new SequentialSearchSymboleTable[size];
+        symbolTable = new SequentialSearchSymbolTable[size];
+
         for (int i = 0; i < size; i++) {
-            symboleTable[i] = new SequentialSearchSymboleTable<>();
+            symbolTable[i] = new SequentialSearchSymbolTable();
         }
-        lgM = (int) (Math.log(size) / Math.log(2));
+
     }
 
     public int size() {
@@ -111,40 +105,59 @@ public class SeparateChainingHashTable<Key, Value> {
         return keysSize == 0;
     }
 
-    protected int hash(Key key) {
-        int hash = key.hashCode() & 0x7fffffff;
-        if (lgM < 26) {
-            hash = hash % primes[lgM + 5];
-        }
-        return hash % size;
-    }
-
-    protected double getLoadFactor() {
+    public double getLoadFactor() {
         return ((double) keysSize) / (double) size;
     }
 
     public boolean contains(Key key) {
         if (key == null) {
-            throw new IllegalArgumentException("Argument to contains() cannot be null");
+            throw new IllegalArgumentException("Argument to contains(0 cannot be null");
         }
         return get(key) != null;
     }
 
+    int hash1(Key key) {
+        int hash = key.hashCode() & 0x7fffffff;
+        hash = (11 * hash) & 0x7fffffff;
+        return hash % size;
+    }
+
+    int hash2(Key key) {
+        int hash = key.hashCode() & 0x7fffffff;
+        hash = (17 * hash) & 0x7fffffff;
+        return hash % size;
+    }
+
     public void resize(int newSize) {
-        SeparateChainingHashTable<Key, Value> separateChainingHashTableTemp = new SeparateChainingHashTable<>(newSize, averageListSize);
+        DoubleProbingHashTable<Key, Value> separateChainingHashTableDoubleProbing =
+                new DoubleProbingHashTable<>(newSize, averageListSize);
+
         for (Key key : keys()) {
-            // not sure if the following line is right - it should be key, value
-            separateChainingHashTableTemp.put(key, get(key));
+            separateChainingHashTableDoubleProbing.put(key, get(key));
         }
-        symboleTable = separateChainingHashTableTemp.symboleTable;
-        size = separateChainingHashTableTemp.size;
+
+        symbolTable = separateChainingHashTableDoubleProbing.symbolTable;
+        size = separateChainingHashTableDoubleProbing.size;
+        keysSize = separateChainingHashTableDoubleProbing.keysSize;
     }
 
     public Value get(Key key) {
         if (key == null) {
-            throw new IllegalArgumentException("key cannot be null");
+            throw new IllegalArgumentException("Argument to get() cannot be null");
         }
-        return symboleTable[hash(key)].get(key);
+        int hash1 = hash1(key);
+        int hash2 = hash2(key);
+
+        Value value;
+        if (symbolTable[hash1].size <= symbolTable[hash2].size) {
+            value = (Value) symbolTable[hash1].get(key);
+            if (value == null && hash1 != hash2) {
+                value = (Value) symbolTable[hash2].get(key);
+            }
+        } else {
+            value = (Value) symbolTable[hash2].get(key);
+        }
+        return value;
     }
 
     public void put(Key key, Value value) {
@@ -155,15 +168,34 @@ public class SeparateChainingHashTable<Key, Value> {
             delete(key);
             return;
         }
-        int hashIndex = hash(key);
-        int currentSize = symboleTable[hashIndex].size;
-        symboleTable[hashIndex].put(key, value);
-        if (currentSize < symboleTable[hashIndex].size) {
+
+        boolean containsKey = contains(key);
+        int hash1 = hash1(key);
+        int hash2 = hash2(key);
+
+        if (!containsKey) {
             keysSize++;
-        }
-        if (getLoadFactor() > averageListSize) {
-            resize(size * 2);
-            lgM++;
+            if (symbolTable[hash1].size <= symbolTable[hash2].size) {
+                symbolTable[hash1].put(key, value);
+            } else {
+                symbolTable[hash2].put(key, value);
+            }
+        } else {
+            boolean isInList1 = false;
+            for (Object keyInList1 : symbolTable[hash1].keys()) {
+                if (keyInList1.equals(key)) {
+                    isInList1 = true;
+                    break;
+                }
+            }
+            if (isInList1) {
+                symbolTable[hash1].put(key, value);
+            } else {
+                symbolTable[hash2].put(key, value);
+            }
+            if (getLoadFactor() > averageListSize) {
+                resize(size * 2);
+            }
         }
     }
 
@@ -174,17 +206,36 @@ public class SeparateChainingHashTable<Key, Value> {
         if (isEmpty() || !contains(key)) {
             return;
         }
-        symboleTable[hash(key)].delete(key);
         keysSize--;
+
+        int hash1 = hash1(key);
+        int hash2 = hash2(key);
+
+        if (!symbolTable[hash1].isEmpty() &&
+                (symbolTable[hash1].size <= symbolTable[hash2].size || symbolTable[hash2].isEmpty())) {
+            int symbolTableSize = symbolTable[hash1].size;
+
+            symbolTable[hash1].delete(key);
+            if (symbolTableSize == symbolTable[hash1].size) {
+                symbolTable[hash2].delete(key);
+            }
+        } else {
+            int symbolTableSize = symbolTable[hash2].size;
+
+            symbolTable[hash2].delete(key);
+            // Key is not on the shorter list
+            if (symbolTableSize == symbolTable[hash2].size) {
+                symbolTable[hash1].delete(key);
+            }
+        }
         if (size > 1 && getLoadFactor() <= averageListSize / (double) 4) {
             resize(size / 2);
-            lgM--;
         }
     }
 
     public Iterable<Key> keys() {
         Queue<Key> keys = new Queue<>();
-        for (SequentialSearchSymboleTable<Key, Value> sequentialSearchST : symboleTable) {
+        for (SequentialSearchSymbolTable<Key, Value> sequentialSearchST : symbolTable) {
             for (Key key : sequentialSearchST.keys()) {
                 keys.enqueue(key);
             }
@@ -194,27 +245,13 @@ public class SeparateChainingHashTable<Key, Value> {
             for (int i = 0; i < keysToBeSorted.length; i++) {
                 keysToBeSorted[i] = keys.dequeue();
             }
+
             Arrays.sort(keysToBeSorted);
+
             for (Key key : keysToBeSorted) {
                 keys.enqueue(key);
             }
         }
         return keys;
-    }
-
-    public static void main(String[] args) {
-        SeparateChainingHashTable<Character, Integer> sCT = new SeparateChainingHashTable<>();
-        //EASYQUTION
-        sCT.put('E', 0);
-        sCT.put('A', 1);
-        sCT.put('S', 2);
-        sCT.put('Y', 3);
-        sCT.put('Q', 4);
-        sCT.put('U', 5);
-        sCT.put('T', 6);
-        sCT.put('I', 7);
-        sCT.put('O', 8);
-        sCT.put('N', 9);
-        for (Character c : sCT.keys()) StdOut.println(c);
     }
 }
