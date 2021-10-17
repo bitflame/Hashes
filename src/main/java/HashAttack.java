@@ -1,5 +1,6 @@
 import java.util.ArrayList;
 import java.util.List;
+
 /* Thanks to Rene Argento for most the code here https://github.com/reneargento */
 public class HashAttack {
     String s = "";
@@ -28,11 +29,20 @@ public class HashAttack {
         }
     }
 
+
     public int myHashCode(String s) {
         int hash = 0;
         for (int i = 0; i < s.length(); i++)
             hash = 0x7fffffff & ((hash * 31) + s.charAt(i));
         return hash;
+    }
+
+    public int compareCost() {
+        return -1;
+    }
+
+    public int hashCost() {
+        return -1;
     }
 
     public static void main(String[] args) {
