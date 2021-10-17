@@ -1,9 +1,12 @@
+import edu.princeton.cs.algs4.Queue;
 import edu.princeton.cs.algs4.StdOut;
 import edu.princeton.cs.algs4.StdRandom;
 
 import java.lang.reflect.Array;
 import java.util.Arrays;
-
+/* https://www.keithschwarz.com/interesting/code/cuckoo-hashmap/CuckooHashMap.java.html <- a lot more explanation. This
+* code is from Rene's implementation
+* https://github.com/reneargento/algorithms-sedgewick-wayne/blob/51825f5cc65efccbad692ca94b00c15e06100601/src/chapter3/section4/Exercise31_CuckooHashing.java */
 public class CuckooHashTable<Key, Value> {
     private class Entry {
         Key key;
@@ -85,7 +88,7 @@ public class CuckooHashTable<Key, Value> {
         size = newSize;
 
         Entry[][] oldEntries = keysAndValues;
-        keysAndValues = (Entry[][]) new Array.newInstance(Entry.class, 2, newSize);
+        keysAndValues = (Entry[][])  Array.newInstance(Entry.class, 2, newSize);
         boolean tryToResize = true;
         while (tryToResize) {
             tryToResize = false;
@@ -95,7 +98,7 @@ public class CuckooHashTable<Key, Value> {
             }
             //Try to add all keys and values - Hash table 1
             for (Entry entry : oldEntries[0]) {
-                if (entry != null && tryToResize(entry) != null) {
+                if (entry != null && tryToInsert(entry) != null) {
                     tryToResize = true;
                     break;
                 }
@@ -156,62 +159,108 @@ public class CuckooHashTable<Key, Value> {
         }
         for (int hashTableIndex = 0; hashTableIndex < 2; hashTableIndex++) {
             int hash = hashFunctions[hashTableIndex].hash(key);
-            if (keysAndValues[hashTableIndex][hash] != null && keysAndValues[hashTableIndex][hash].key.equals(key)){
+            if (keysAndValues[hashTableIndex][hash] != null && keysAndValues[hashTableIndex][hash].key.equals(key)) {
                 return keysAndValues[hashTableIndex][hash].value;
             }
         }
         return null;
     }
+
     public void put(Key key, Value value) {
-        if (key==null) {
+        if (key == null) {
             throw new IllegalArgumentException("Key cannot be null");
         }
-        if (value==null) {
+        if (value == null) {
             delete(key);
             return;
         }
         // Update key if it already exists
         for (int hashTableIndex = 0; hashTableIndex < 2; hashTableIndex++) {
             int hash = hashFunctions[hashTableIndex].hash(key);
-            if (keysAndValues[hashTableIndex][hash] != null && keysAndValues[hashTableIndex][hash].key.equals(key)){
-                keysAndValues[hashTableIndex][hash].value =value;
+            if (keysAndValues[hashTableIndex][hash] != null && keysAndValues[hashTableIndex][hash].key.equals(key)) {
+                keysAndValues[hashTableIndex][hash].value = value;
                 return;
             }
         }
         //Key does not exist, let's insert it
         // Check if the numer of keys is equal or more than alf of the hash size
         if (keysSize >= size) {
-            resize(size*2);
+            resize(size * 2);
         }
         Entry entry = new Entry(key, value);
-        while(entry != null) {
+        while (entry != null) {
             entry = tryToInsert(entry);
-            if (entry!=null) {
+            if (entry != null) {
                 rehash();
             }
         }
         keysSize++;
     }
+
     /*
-    * Given an Entry, tries to insert that entry into the hash table, taking several iterations if necessary
-    * @return The last Displaced entry or null if all collisions were resolved
-    * */
+     * Given an Entry, tries to insert that entry into the hash table, taking several iterations if necessary
+     * @return The last Displaced entry or null if all collisions were resolved
+     * */
     private Entry tryToInsert(Entry entry) {
         int maxTries = size + 1;
         int hashTableIndex = 0;
         for (int numberOfTries = 0; numberOfTries < maxTries; numberOfTries++) {
             int hash = hashFunctions[hashTableIndex].hash(entry.key);
 
-            if (keysAndValues[hashTableIndex][hash]==null) {
-                keysAndValues[hashTableIndex][hash]=entry;
+            if (keysAndValues[hashTableIndex][hash] == null) {
+                keysAndValues[hashTableIndex][hash] = entry;
                 return null;
             }
             Entry entryToDisplace = keysAndValues[hashTableIndex][hash];
-            keysAndValues[hashTableIndex][hash]=entry;
+            keysAndValues[hashTableIndex][hash] = entry;
             entry = entryToDisplace;
-            hashTableIndex = (hashTableIndex+1) % 2;
+            hashTableIndex = (hashTableIndex + 1) % 2;
         }
         return entry;
     }
-    // Need to delete() and keys()
+
+    public void delete(Key key) {
+        if (key == null) {
+            throw new IllegalArgumentException("Argument to delete() cannot be null");
+        }
+        if (!contains(key)) {
+            return;
+        }
+        for (int hashTableIndex = 0; hashTableIndex < 2; hashTableIndex++) {
+            int hash = hashFunctions[hashTableIndex].hash(key);
+
+            if (keysAndValues[hashTableIndex][hash] != null && keysAndValues[hashTableIndex][hash].key.equals(key)) {
+                keysAndValues[hashTableIndex][hash] = null;
+                break;
+            }
+        }
+        keysSize--;
+        if (keysSize > 1 && keysSize < size / (double) 8) {
+            resize(size / 2);
+        }
+    }
+
+    public Iterable<Key> keys() {
+        Queue<Key> keySet = new Queue<>();
+        for (int hashTableIndex = 0; hashTableIndex < keysAndValues.length; hashTableIndex++) {
+            for (Entry entry : keysAndValues[hashTableIndex]) {
+                if (entry != null) {
+                    keySet.enqueue(entry.key);
+                }
+            }
+
+            if (!keySet.isEmpty() && keySet.peek() instanceof Comparable) {
+                Key[] keysToBeSorted = (Key[]) new Comparable[keySet.size()];
+                for (int i = 0; i < keysToBeSorted.length; i++) {
+                    keysToBeSorted[i] = keySet.dequeue();
+                }
+                Arrays.sort(keysToBeSorted);
+
+                for (Key key : keysToBeSorted) {
+                    keySet.enqueue(key);
+                }
+            }
+        }
+        return keySet;
+    }
 }
