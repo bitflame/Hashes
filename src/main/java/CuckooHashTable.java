@@ -4,9 +4,10 @@ import edu.princeton.cs.algs4.StdRandom;
 
 import java.lang.reflect.Array;
 import java.util.Arrays;
+
 /* https://www.keithschwarz.com/interesting/code/cuckoo-hashmap/CuckooHashMap.java.html <- a lot more explanation. This
-* code is from Rene's implementation
-* https://github.com/reneargento/algorithms-sedgewick-wayne/blob/51825f5cc65efccbad692ca94b00c15e06100601/src/chapter3/section4/Exercise31_CuckooHashing.java */
+ * code is from Rene's implementation
+ * https://github.com/reneargento/algorithms-sedgewick-wayne/blob/51825f5cc65efccbad692ca94b00c15e06100601/src/chapter3/section4/Exercise31_CuckooHashing.java */
 public class CuckooHashTable<Key, Value> {
     private class Entry {
         Key key;
@@ -88,7 +89,7 @@ public class CuckooHashTable<Key, Value> {
         size = newSize;
 
         Entry[][] oldEntries = keysAndValues;
-        keysAndValues = (Entry[][])  Array.newInstance(Entry.class, 2, newSize);
+        keysAndValues = (Entry[][]) Array.newInstance(Entry.class, 2, newSize);
         boolean tryToResize = true;
         while (tryToResize) {
             tryToResize = false;
@@ -262,5 +263,36 @@ public class CuckooHashTable<Key, Value> {
             }
         }
         return keySet;
+    }
+
+    public static void main(String[] args) {
+        CuckooHashTable<Integer, Integer> cuckooHashTable = new CuckooHashTable<>(16);
+
+        for (int key = 1; key < 10; key++) {
+            int randomKey = StdRandom.uniform(Integer.MAX_VALUE);
+            cuckooHashTable.put(randomKey, randomKey);
+        }
+
+        cuckooHashTable.get(5);
+
+        for (Integer key : cuckooHashTable.keys()) {
+            StdOut.println(key + " ");
+        }
+
+        StdOut.println();
+
+
+        for (int key = 1; key < 10000; key++) {
+            cuckooHashTable.put(key, key);
+        }
+
+        for (int key = 1; key < 1000000; key++) {
+            cuckooHashTable.delete(key);
+        }
+
+        for (int key = 1; key < 150000; key++) {
+            int randomKey = StdRandom.uniform(Integer.MAX_VALUE);
+            cuckooHashTable.put(randomKey, randomKey);
+        }
     }
 }
