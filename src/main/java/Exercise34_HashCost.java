@@ -1,10 +1,18 @@
 import edu.princeton.cs.algs4.Queue;
 import edu.princeton.cs.algs4.StdOut;
+import edu.princeton.cs.algs4.StdRandom;
 
+
+import javax.print.DocFlavor;
 import java.util.Arrays;
 
 /* Thanks to Rene Argento: https://github.com/reneargento for the following code */
 public class Exercise34_HashCost {
+    public static final int ASC_II_LOWERCASE_LETTERS_INITIAL_INDEX = 97;
+    public static final int ASC_II_LOWERCASE_LETTERS_FINAL_INDEX = 122;
+    public static final int ASC_II_UPPERCASE_LETTERS_INITIAL_INDEX = 65;
+    public static final int ASC_II_UPPERCASE_LETTERS_FINAL_INDEX = 90;
+
     private interface HashTable<Key, Value> {
         long[] timeSpent = new long[2];
 
@@ -109,7 +117,7 @@ public class Exercise34_HashCost {
 
         private int size;
         private int keysSize;
-        DoubleProbingHashTable[] symbolTable;
+        SequentialSearchSymbolTable[] symbolTable;
 
         private static final int DEFAULT_HASH_TABLE_SIZE = 997;
         private static final int DEFAULT_AVERAGE_LIST_SIZE = 5;
@@ -127,6 +135,10 @@ public class Exercise34_HashCost {
         //The lg of the hash table size
         //Used in combination with PRIMES[] to distribute keys uniformly in the hash function after resizes
         private int lgM;
+
+        public SeparateChainingHashTableHashCost() {
+            this(DEFAULT_HASH_TABLE_SIZE, DEFAULT_AVERAGE_LIST_SIZE);
+        }
 
         public SeparateChainingHashTableHashCost(int initialSize, int averageListSize) {
             this.size = initialSize;
@@ -160,7 +172,7 @@ public class Exercise34_HashCost {
 
         public boolean contains(Key key) {
             if (key == null) {
-                throw new IllegalArgumentException("Argument to contains(0 cannot be null");
+                throw new IllegalArgumentException("Argument to contains() cannot be null");
             }
             return get(key) != null;
         }
@@ -194,6 +206,10 @@ public class Exercise34_HashCost {
         }
 
         public void put(Key key, Value value, boolean resetTimers) {
+            if (key == null) {
+                throw new IllegalArgumentException("Key cannot be null");
+            }
+
             if (value == null) {
                 delete(key);
                 return;
@@ -298,7 +314,7 @@ public class Exercise34_HashCost {
             return keysSize;
         }
 
-        public int hash(Key key) {
+        private int hash(Key key) {
             int hash = key.hashCode() & 0x7fffffff;
             if (lgM < 26) {
                 hash = hash % PRIMES[lgM + 5];
@@ -427,31 +443,34 @@ public class Exercise34_HashCost {
                 lgM--;
             }
         }
+
         public Iterable<Key> keys() {
             Queue<Key> keySet = new Queue<>();
-            for (Object key: keys) {
-                if (key!=null) {
-                    keySet.enqueue((Key)key);
+            for (Object key : keys) {
+                if (key != null) {
+                    keySet.enqueue((Key) key);
                 }
             }
             if (!keySet.isEmpty() && keySet.peek() instanceof Comparable) {
                 Key[] keysToBeSorted = (Key[]) new Comparable[keySet.size()];
                 for (int i = 0; i < keysToBeSorted.length; i++) {
-                    keysToBeSorted[i]=keySet.dequeue();
+                    keysToBeSorted[i] = keySet.dequeue();
                 }
                 Arrays.sort(keysToBeSorted);
 
-                for (Key key: keysToBeSorted) {
+                for (Key key : keysToBeSorted) {
                     keySet.enqueue(key);
                 }
             }
             return keySet;
         }
+
         private void resetTimers() {
-            timeSpent[0]=0;
-            timeSpent[1]=0;
+            timeSpent[0] = 0;
+            timeSpent[1] = 0;
         }
     }
+
     enum InputType {
         INTEGER, DOUBLE, STRING;
     }
@@ -461,9 +480,125 @@ public class Exercise34_HashCost {
         StdOut.println("Hash table with Separate Chaining\n");
 
         StdOut.println("Integer keys");
-        HashTable<Integer, Integer> separateChainingTableIntegerHashCost =
+        HashTable<Integer, Integer> separateChainingHashTableIntegerHashCost =
                 hashCost.new SeparateChainingHashTableHashCost<>();
         hashCost.computeHashToCompareTimeRatios(separateChainingHashTableIntegerHashCost, InputType.INTEGER);
-        //todo -- need to type the rest and get rid of the errors
+        StdOut.println("Double keys");
+        HashTable<Double, Double> separateChainingHashTableDoubleHashCost =
+                hashCost.new SeparateChainingHashTableHashCost<>();
+        hashCost.computeHashToCompareTimeRatios(separateChainingHashTableDoubleHashCost, InputType.DOUBLE);
+
+        StdOut.println("String keys");
+        HashTable<String, String> separateChainingHashTableStringHashCost =
+                hashCost.new SeparateChainingHashTableHashCost<>();
+        hashCost.computeHashToCompareTimeRatios(separateChainingHashTableStringHashCost, InputType.STRING);
+        StdOut.println("\nHash table with Linear Probing\n");
+        StdOut.println("Integer keys");
+        HashTable<Integer, Integer> linearProbingHashTableIntegerHashCost =
+                hashCost.new LinearProbingHashTableHashCost<>(10000);
+        hashCost.computeHashToCompareTimeRatios(linearProbingHashTableIntegerHashCost, InputType.INTEGER);
+        StdOut.println("Double keys");
+        HashTable<Double, Double> linearProbingHashTableDoubleHashCost =
+                hashCost.new LinearProbingHashTableHashCost<>(10000);
+        hashCost.computeHashToCompareTimeRatios(linearProbingHashTableDoubleHashCost, InputType.DOUBLE);
+        StdOut.println("String keys");
+        HashTable<String, String> linearProbingHashTableStringHashCost = hashCost.new LinearProbingHashTableHashCost<>(10000);
+        hashCost.computeHashToCompareTimeRatios(linearProbingHashTableStringHashCost, InputType.STRING);
+    }
+
+    private void computeHashToCompareTimeRatios(HashTable hashTable, InputType inputType) {
+        long totalTimeSpentOnHash = 0;
+        long totalTimeSpentOnCompares = 0;
+        int numberOfKeys = 1000000;
+        for (int key = 0; key < numberOfKeys; key++) {
+            switch (inputType) {
+                case INTEGER:
+                    int integerKey = StdRandom.uniform(numberOfKeys * 10);
+                    hashTable.put(integerKey, integerKey);
+                    break;
+                case DOUBLE:
+                    double doubleKey = StdRandom.uniform();
+                    hashTable.put(doubleKey, doubleKey);
+                    break;
+                case STRING:
+                    StringBuilder string = new StringBuilder();
+                    for (int c = 0; c < 10; c++) {
+                        // Generate random char between 'A' and 'z'
+                        char currentChar = (char) StdRandom.uniform(ASC_II_UPPERCASE_LETTERS_INITIAL_INDEX,
+                                ASC_II_LOWERCASE_LETTERS_FINAL_INDEX + 1);
+                        string.append(currentChar);
+                    }
+                    String stringKey = string.toString();
+                    hashTable.put(stringKey, stringKey);
+                    break;
+            }
+            totalTimeSpentOnHash += HashTable.timeSpent[0];
+            totalTimeSpentOnCompares += HashTable.timeSpent[1];
+        }
+        double hashToCompareRatioOnPut = totalTimeSpentOnHash / (double) totalTimeSpentOnCompares;
+        StdOut.println("Ratio of time required for hash() to the time required for compareTo() on put() operation: " +
+                String.format("%.2f", hashToCompareRatioOnPut));
+        totalTimeSpentOnHash = 0;
+        totalTimeSpentOnCompares = 0;
+        for (int key = 0; key < numberOfKeys; key++) {
+            switch (inputType) {
+                case INTEGER:
+                    int randomIntegerKey = StdRandom.uniform(numberOfKeys * 2);
+                    hashTable.get(randomIntegerKey);
+                    break;
+                case DOUBLE:
+                    double randomDoubleKey = StdRandom.uniform();
+                    hashTable.get(randomDoubleKey);
+                    break;
+                case STRING:
+                    StringBuilder string = new StringBuilder();
+                    for (int c = 0; c < 10; c++) {
+                        // Generate random char between 'A' and 'Z'
+                        char currentChar = (char) StdRandom.uniform(ASC_II_UPPERCASE_LETTERS_INITIAL_INDEX,
+                                ASC_II_LOWERCASE_LETTERS_FINAL_INDEX + 1);
+                        string.append(currentChar);
+                    }
+                    String stringKey = string.toString();
+                    hashTable.get(stringKey);
+                    break;
+            }
+            totalTimeSpentOnHash += HashTable.timeSpent[0];
+            totalTimeSpentOnCompares += HashTable.timeSpent[1];
+        }
+        double hashToCompareRatioOnGet = totalTimeSpentOnHash / (double) totalTimeSpentOnCompares;
+        StdOut.println("Ratio of time required for hash() to the time required for compareTo() on get(0 operation" +
+                String.format("%.2f", hashToCompareRatioOnGet));
+        totalTimeSpentOnHash = 0;
+        totalTimeSpentOnCompares = 0;
+        for (int key = 0; key < numberOfKeys; key++) {
+            switch (inputType) {
+                case INTEGER:
+                    int randomIntegerKey = StdRandom.uniform(numberOfKeys * 2);
+                    hashTable.delete(randomIntegerKey);
+                    break;
+                case DOUBLE:
+                    double randomDoubleKey = StdRandom.uniform();
+                    hashTable.delete(randomDoubleKey);
+                    break;
+                case STRING:
+                    StringBuilder string = new StringBuilder();
+                    for (int c = 0; c < 10; c++) {
+                        // Generate random char between 'A' to 'Z'
+                        char currentChar = (char) StdRandom.uniform(ASC_II_UPPERCASE_LETTERS_INITIAL_INDEX,
+                                ASC_II_LOWERCASE_LETTERS_FINAL_INDEX + 1);
+                        string.append(currentChar);
+                    }
+                    String stringKey = string.toString();
+                    hashTable.delete(stringKey);
+                    break;
+            }
+            totalTimeSpentOnHash += HashTable.timeSpent[0];
+            totalTimeSpentOnCompares += HashTable.timeSpent[1];
+
+
+        }
+        double hashToCompareRatioOnDelete = totalTimeSpentOnHash / (double) totalTimeSpentOnCompares;
+        StdOut.println("Ratio of time required for hash() to the time required for comparTo() on delete() operation: " +
+                String.format("%.2f", hashToCompareRatioOnDelete));
     }
 }

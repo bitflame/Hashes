@@ -11,6 +11,7 @@ repositories {
 
 dependencies {
     implementation fileTree(dir:'lib', include:'*.jar')
+    implementation fileTree(dir:'util',include:'*.java')
     implementation 'org.spockframework:spock-core:2.0-groovy-3.0'
     implementation 'org.codehaus.groovy:groovy-all:3.0.8'
 }
