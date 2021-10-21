@@ -60,7 +60,7 @@ public class GfG {
     }
 
     // this might be doable with a couple of pointers if we could use an array
-    private String decode_v2(String str) {
+    public String decode_v2(String str) {
         StringBuilder sb = new StringBuilder();
         char c = str.charAt(0);
         char currentChar;

@@ -29,6 +29,19 @@ class GfGSpecification extends Specification {
 
         then:
         thrown(IllegalArgumentException);
+    }
+
+    def "GfG decoder should work"() {
+        given:
+        def GfG runLengthInstance = new GfG();
+        result == runLengthInstance.decode_v2(str)
+
+        where:
+        str        | result
+        A10        | AAAAAAAAAA
+        A3B1C2D1E1 | AAABCCDE
+
+
 
     }
 }
