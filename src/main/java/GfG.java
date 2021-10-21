@@ -1,6 +1,7 @@
 public class GfG {
     String encode(String str) {
         if (str.equals("") || str == null || str.length() == 0)
+
             throw new IllegalArgumentException("String value to encode() should be valid");
         char prevChar = str.charAt(0);
         char currentChar;
