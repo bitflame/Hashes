@@ -58,7 +58,8 @@ public class GfG {
         }
         return sb.toString();
     }
-// this might be doable with a couple of pointers if we could use an array
+
+    // this might be doable with a couple of pointers if we could use an array
     private String decode_v2(String str) {
         StringBuilder sb = new StringBuilder();
         char c = str.charAt(0);
@@ -71,11 +72,14 @@ public class GfG {
                 for (int j = 0; j < digits; j++) {
                     sb.append(c);
                 }
-                digits=0;
+                digits = 0;
                 c = currentChar;
             }
-            if (Character.isDigit(currentChar) ) {
-                digits = digits * 10 + Integer.parseInt("" + currentChar);
+            if (Character.isDigit(currentChar)) {
+                int digit = Integer.parseInt("" + currentChar);
+                if (digit < 0)
+                    throw new IllegalArgumentException("the value to decode_v2() has to be greater than 0.");
+                digits = digits * 10 + digit;
             }
         }
         for (int i = 0; i < digits; i++) {
