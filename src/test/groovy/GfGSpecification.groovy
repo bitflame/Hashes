@@ -41,7 +41,5 @@ class GfGSpecification extends Specification {
         A10        | AAAAAAAAAA
         A3B1C2D1E1 | AAABCCDE
 
-
-
     }
 }

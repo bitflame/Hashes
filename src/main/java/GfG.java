@@ -1,5 +1,7 @@
 import edu.princeton.cs.algs4.Accumulator;
 
+import java.util.Locale;
+
 public class GfG {
     String encode(String str) {
         if (str.equals("") || str == null || str.length() == 0)
@@ -41,6 +43,40 @@ public class GfG {
         }
     }
 
+    String encode_v2(String str) {
+        if (str == null || str.length() == 0) return "";
+        char[] cArray = str.toCharArray();
+        if (cArray.length == 1) return cArray[0] + "1";
+        int counter = 0;
+        int charCounter = 1;
+        char prevChar = cArray[counter];
+        char currentChar = cArray[counter + 1];
+        StringBuilder sb = new StringBuilder();
+        while (counter < cArray.length-1) {
+            if (currentChar != prevChar) {
+                sb.append(prevChar);
+                sb.append(charCounter);
+                charCounter = 1;
+            }
+            counter++;
+            prevChar = cArray[counter - 1];
+            currentChar = cArray[counter];
+            if (prevChar==currentChar) charCounter++;
+        }
+       /* if (currentChar != prevChar) {
+            sb.append(prevChar);
+            sb.append(charCounter);
+            sb.append(currentChar);
+            sb.append(1);
+        } else {
+            sb.append(prevChar);
+            sb.append(++charCounter);
+        } */
+        sb.append(prevChar);
+        sb.append(charCounter);
+        return sb.toString().toUpperCase();
+    }
+
     // This method breaks if the number is larger than 9 i.e. one digit
     private String decode(String str) {
         StringBuilder sb = new StringBuilder();
@@ -56,7 +92,7 @@ public class GfG {
             lo = hi + 1;
             hi = lo + 1;
         }
-        return sb.toString();
+        return sb.toString().toUpperCase(Locale.ENGLISH);
     }
 
     // this might be doable with a couple of pointers if we could use an array
@@ -92,6 +128,8 @@ public class GfG {
         GfG G = new GfG();
         System.out.println(G.encode("a"));
         System.out.println(G.encode("aaaabbbccc"));
+        System.out.println("Encode version 2 gives: " + G.encode_v2("a") + " for encoding 'a' ");
+        System.out.println("Encode version 2 gives: " + G.encode_v2("aaaabbbccc") + " for encoding 'aaaabbbccc' ");
         System.out.println(G.decode_v2("A3B1C2D1E1"));
         System.out.printf("\n%s\n", G.decode_v2("A10"));
         System.out.printf("%s\n", G.decode_v2("A122"));
