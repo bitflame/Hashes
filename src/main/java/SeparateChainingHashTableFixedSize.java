@@ -9,7 +9,7 @@ public class SeparateChainingHashTableFixedSize<Key, Value> {
             Value value;
             Node next;
 
-            public Node(Key key, Value value, Node node) {
+            public Node(Key key, Value value, Node next) {
                 this.key = key;
                 this.value = value;
                 this.next = next;
@@ -115,7 +115,7 @@ public class SeparateChainingHashTableFixedSize<Key, Value> {
 
     public Value get(Key key) {
         if (key == null) {
-            throw new IllegalArgumentException("Argumet to get() cannot be null");
+            throw new IllegalArgumentException("Argument to get() cannot be null");
         }
         return (Value) symbolTable[hash(key)].get(key);
     }
