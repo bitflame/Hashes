@@ -4,6 +4,10 @@ import java.awt.geom.QuadCurve2D;
 import java.util.Arrays;
 
 public class DoubleProbingHashTable<Key, Value> {
+    public DoubleProbingHashTable() {
+        this(DEFAULT_HASH_TABLE_SIZE, DEFAULT_AVERAGE_LIST_SIZE);
+    }
+
     class SequentialSearchSymbolTable<Key, Value> {
         private class Node {
             Key key;
