@@ -27,6 +27,7 @@ public class Exer3_5_10 {
 
         public Value get(Node x, Key key) {
             // if there is a duplicate of key in the rigt subtree, it should be the min()
+            return (Value) x.value;
         }
 
         public void put(Key key, Value value) {
